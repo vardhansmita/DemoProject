@@ -10,10 +10,10 @@ import Alamofire
 class NetworkRequest{
   
   //Doordash APi to fetch list of restaurants
-  let restaurantUrl = "https://api.doordash.com/v1/store_search/?lat=37.7749&lng=-122.4194"
+  fileprivate let restaurantUrl = "https://api.doordash.com/v1/store_search/?lat=37.7749&lng=-122.4194"
   
   //Pixabay api to fetch list of images
-  let imageUrl = "https://pixabay.com/api/?key=10175944-bde2e7682a3714b496fc7b7b7&q=yellow+flowers&image_type=all"
+  fileprivate let imageUrl = "https://pixabay.com/api/?key=10175944-bde2e7682a3714b496fc7b7b7&q=yellow+flowers&image_type=all"
   
   
   //Mark: - GetImages
