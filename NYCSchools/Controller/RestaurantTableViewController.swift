@@ -11,20 +11,23 @@ import SDWebImage
 
 class RestaurantTableViewController: UITableViewController {
   
-  
-  let networkCall = NetworkRequest()
+  fileprivate let cellId = "Cell"
+  fileprivate let SegueId = "MenuId"
+  fileprivate let networkCall = NetworkRequest()
   var restaurantArray = [Restaurant]()
   var fetchedMenu = [Menu]()
+  var popularItems = [PopItems]()
   
   override func viewDidLoad() {
     super.viewDidLoad()
     SVProgressHUD.show()
     getRestaurantData()
   }
-  
-  override func viewDidAppear(_ animated: Bool) {
-    super .viewDidAppear(true)
-    fetchedMenu.removeAll()
+  override func viewWillAppear(_ animated: Bool) {
+    super.viewWillDisappear(true)
+    DispatchQueue.main.async {
+      self.tableView.reloadData()
+    }
   }
   
   //Fetching  Restaurant List from server
@@ -49,6 +52,22 @@ class RestaurantTableViewController: UITableViewController {
       }
     }
   }
+  
+  // MARK: - Navigation
+  
+  // In a storyboard-based application, you will often want to do a little preparation before navigation
+  override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
+  
+    if segue.identifier == SegueId,
+      let destinationVC = segue.destination as? MenuTableViewController{
+      destinationVC.popItemsArray = popularItems
+    }
+  }
+  override open func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
+    return 135.0
+  }
+}
+extension  RestaurantTableViewController{
   // MARK: - Table view data source
   
   override func numberOfSections(in tableView: UITableView) -> Int {
@@ -61,7 +80,8 @@ class RestaurantTableViewController: UITableViewController {
   
   
   override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-    guard let cell = tableView.dequeueReusableCell(withIdentifier: "Cell", for: indexPath) as? RestaurantTableViewCell else{
+    
+    guard let cell = tableView.dequeueReusableCell(withIdentifier: cellId, for: indexPath) as? RestaurantTableViewCell else{
       return UITableViewCell()
     }
     let data = restaurantArray[indexPath.row]
@@ -72,7 +92,7 @@ class RestaurantTableViewController: UITableViewController {
       let coverImage = data.coverImageUrl else{
         return UITableViewCell()
     }
-    //Moving UI items on main thread
+     //Moving UI items on main thread
     DispatchQueue.main.async {
       cell.nameLbl.text = name
       cell.descriptionLbl.text = desc
@@ -83,33 +103,32 @@ class RestaurantTableViewController: UITableViewController {
     }
     return cell
   }
-  
-  override open func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
-    return 135.0
-  }
-  
-  
-  // MARK: - Navigation
-  
-  // In a storyboard-based application, you will often want to do a little preparation before navigation
-  override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
-
-
-    if segue.identifier == "MenuId",
-      let destinationVC = segue.destination as? MenuTableViewController,
-      let indexPath = tableView.indexPathForSelectedRow{
-      guard let data = restaurantArray[indexPath.row].menus else{
-        return
-      }
-      fetchedMenu.append(contentsOf: data)
-      guard let popItems = fetchedMenu.first?.popularItems else{
-        return
-      }
-      destinationVC.popItemsArray = popItems
-    }
-  }
-  
 }
+
+extension RestaurantTableViewController{
+  
+  //MARK : TableView Delegate 
+  override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
+    guard let data = restaurantArray[indexPath.row].menus else{
+      return
+    }
+    fetchedMenu = data.map{$0}
+    print(fetchedMenu)
+    guard let popItems = fetchedMenu.first?.popularItems else{
+      return
+    }
+    if popItems.count > 0{
+      popularItems = popItems.map{$0}
+      self.performSegue(withIdentifier: SegueId, sender: self)
+      
+    }else{
+      Alert.showBasicAlert(title: "No menus found", message: "Menus are not provided for this Restaurant", vc: self)
+      
+    }
+    
+  }
+}
+
 
 // MARK: - Networking.GetSchoolFailureReason
 fileprivate extension NetworkRequest.GetRestFailureReason {
