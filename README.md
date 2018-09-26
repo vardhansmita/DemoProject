@@ -1,4 +1,4 @@
-# SmitaVardhan-DemoProject
+# DemoProject
 
 
 This is an mobile client application . It is written in Swift 4 and XCode 9.4. It uses a simple restful service to get data from the server and display it in a list format in a tableview and CollectionView
